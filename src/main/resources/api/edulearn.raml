@@ -1,0 +1,69 @@
+#%RAML 1.0
+title: EduLearn
+version: 1.0.0
+
+securitySchemes:
+  auth:
+    type: OAuth 2.0
+
+traits:
+  requestHeaders: !include /reusableproperties/traits/requestHeaders.raml
+  requestQuery: !include /reusableproperties/traits/queryparameters.raml
+
+types:
+  inputschema: !include /reusableproperties/types/input.raml
+  outputschema: !include /reusableproperties/types/output.raml
+  clientErrors: !include /reusableproperties/types/ClientErrors.raml
+  ServerErrors: !include /reusableproperties/types/ServerErrors.raml
+  Example: !include/reusableproperties/types/example.raml
+
+resourceTypes:
+  course-id-resource: !include /reusableproperties/ResourceTypes/resourceType.raml
+
+/enrollments:
+  securedBy:
+    - auth
+  is:
+    - requestHeaders
+  description: To enrol courses
+  post:   
+    body:
+      application/json:
+         type: inputschema 
+    responses:
+      201:
+        body:
+          application/json:
+            type: outputschema
+      400:
+        body:
+          application/json:
+            type: clientErrors 
+      500:
+        body:
+          application/json:
+            type: ServerErrors
+
+  /{courses}:
+    uriParameters:
+      courses:
+        type: string
+        enum: ["MULESOFT", "JAVA", "PYTHON", "SQL","POWER BI"] 
+    get:
+      description: to retrieve/fetch the course details
+      is:
+        - requestQuery
+      responses:
+        200:
+          body:
+            application/json:
+              type: Example
+
+    /{course_id}:
+      uriParameters:
+        course_id:
+          type: string
+      type: course-id-resource
+
+         
+

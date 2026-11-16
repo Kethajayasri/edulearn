@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd">
+	<db:config name="Database_Config1" doc:name="Database Config" doc:id="db8430e2-985c-427f-ad14-2f22f9db9b21" >
+		<db:my-sql-connection host="localhost" port="3306" user="root" password="Js@123456" database="Edulearn" />
+	</db:config>
+	<flow name="get:\enrollments\(courses)\(course_id):edulearn-config">
+        <ee:transform doc:name="Transform Message" doc:id="b5efe290-0d0b-45fe-8f60-a4f3cb720a3d">
+            <ee:message />
+			<ee:variables>
+                <ee:set-variable variableName="courses"><![CDATA[attributes.uriParams.'courses']]></ee:set-variable>
+				<ee:set-variable variableName="course_id" ><![CDATA[attributes.uriParams.'course_id']]></ee:set-variable>
+            
+</ee:variables>
+        </ee:transform>
+		<set-variable value="#[attributes.queryParams.student_id]" doc:name="Set Variable" doc:id="d7350299-5729-463d-b8d7-be198b4d47de" variableName="studentID"/>
+		<db:select doc:name="Select" doc:id="d7e97013-6197-4c8a-b020-4d8734210e20" config-ref="Database_Config1">
+			<db:sql ><![CDATA[select * from edu_learn where student_id = :studentid;]]></db:sql>
+			<db:input-parameters ><![CDATA[#[studentid : vars.studentID]]]></db:input-parameters>
+		</db:select>
+		<ee:transform doc:name="Transform Message">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+    
+</flow>
+	<flow name="get:\enrollments\(courses):edulearn-config">
+		<set-variable value="#[attributes.queryParams.student_id]" doc:name="Set Variable" doc:id="7b634665-0485-479e-900a-6b738dc08258" variableName="ID"/>
+		<ee:transform doc:name="Transform Message">
+            <ee:variables>
+                <ee:set-variable variableName="courses">attributes.uriParams.'courses'</ee:set-variable>
+            </ee:variables>
+        </ee:transform>
+		<ee:transform doc:name="Transform Message" doc:id="dcca1d78-5173-41a8-977a-ec119fd36ff2" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+ [vars.ID] ++
+  [
+    {
+      "course_id" : vars.courses ++ uuid() ,
+  	  "course_type" : "Mulesoft",
+  	  "course_fee": 20000,
+  	  "duration": 90
+    },
+    {
+      "course_id" : vars.courses ++ uuid(),
+  	  "course_type" : "Mulesoft",
+  	  "course_fee": 25000,
+  	  "duration": 90
+    }
+  ]]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+    
+</flow>
+</mule>

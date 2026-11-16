@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
+	<flow name="put:\enrollments\(courses)\(course_id):application\json:edulearn-config">
+        <ee:transform doc:name="Transform Message">
+            <ee:variables>
+                <ee:set-variable variableName="courses"><![CDATA[attributes.uriParams.'courses']]></ee:set-variable>
+				<ee:set-variable variableName="course_id" ><![CDATA[attributes.uriParams.'course_id']]></ee:set-variable>
+            
+</ee:variables>
+        </ee:transform>
+        <set-variable value='#[payload.student_name]' doc:name="Set Variable" doc:id="9dc252dc-bf30-4c20-8415-19f8c5d734b7" variableName="studentName"/>
+		<ee:transform doc:name="Transform Message">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+var stu_name = payload.student_name
+---
+{
+  "student_name": vars.studentName,
+  "course_id": vars.courses ++""++ uuid(),
+   message: vars.courses ++""++"info updated successfully"
+} ]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+    </flow>
+    <flow name="delete:\enrollments\(courses)\(course_id):edulearn-config">
+        <ee:transform doc:name="Transform Message">
+            <ee:variables>
+                <ee:set-variable variableName="courses"><![CDATA[attributes.uriParams.'courses']]></ee:set-variable>
+				<ee:set-variable variableName="course_id" ><![CDATA[attributes.uriParams.'course-id']]></ee:set-variable>
+            
+</ee:variables>
+        </ee:transform>
+        <ee:transform doc:name="Transform Message">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+  "course_id": vars.courses,
+  message: vars.courses ++ "course enrolled is closed successfully",
+} as Object {encoding: "UTF-8", mediaType: "application/json"}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+    </flow>
+    <flow name="patch:\enrollments\(courses)\(course-id):application\json:edulearn-config">
+        <ee:transform doc:name="Transform Message">
+            <ee:variables>
+                <ee:set-variable variableName="courses">attributes.uriParams.'courses'</ee:set-variable>
+                <ee:set-variable variableName="course-id">attributes.uriParams.'course-id'</ee:set-variable>
+            </ee:variables>
+        </ee:transform>
+        <ee:transform doc:name="Transform Message">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+  "course-id": "JAVA-13456",
+  message: "Specific course details updated successfully"
+} as Object {encoding: "UTF-8", mediaType: "application/json"}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+    </flow>
+</mule>

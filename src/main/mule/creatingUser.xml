@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd">
+	<db:config name="Database_Config" doc:name="Database Config" doc:id="c65b9b8b-62c1-496d-940c-0184ef6e2cee" >
+		<db:my-sql-connection host="localhost" port="3306" user="root" password="Js@123456" database="edulearn" />
+	</db:config>
+	<flow name="post:\enrollments:application\json:edulearn-config">
+        <set-variable value="#[payload.course_type]" doc:name="Set Variable" doc:id="be75e4d5-4f06-45ef-8c8d-0a32aa3c008b" variableName="courseType"/>
+		<ee:transform doc:name="Transform Message" doc:id="2efc2b6d-0302-424d-9863-32c68dfc91af">
+            <ee:message>
+
+            </ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="post" ><![CDATA[payload]]></ee:set-variable>
+			</ee:variables>
+        
+</ee:transform>
+		<db:insert doc:id="b79f069d-8760-4669-b5cc-65ef38c481de" config-ref="Database_Config">
+			<db:sql ><![CDATA[INSERT INTO edu_learn
+VALUES (:student_id,
+:student_name,
+:course_type,
+:course_fee,
+:duration)]]></db:sql>
+			<db:input-parameters ><![CDATA[#[vars.post]]]></db:input-parameters>
+		</db:insert>
+		<ee:transform doc:name="Transform Message" doc:id="b160ffed-c88d-4c4e-8abb-ad8aba72959b" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+vars.post ++ 
+{
+	"message":"created successfully"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+    
+</flow>
+</mule>
